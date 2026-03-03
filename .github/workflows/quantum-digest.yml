@@ -1,0 +1,39 @@
+# Daily Quantum News — runs at 8 AM CET on GitHub's servers.
+# Add repo secrets: QUANTUM_DIGEST_RECIPIENT, GMAIL_APP_PASSWORD
+
+name: Quantum Digest 8AM CET
+
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - run: pip install feedparser
+
+      - name: Run quantum digest
+        env:
+          QUANTUM_DIGEST_RECIPIENT: ${{ secrets.QUANTUM_DIGEST_RECIPIENT }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: python scripts/quantum_daily_digest.py
+
+      - name: Persist sent-log
+        run: |
+          if [ -f scripts/.quantum-digest-sent.log ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add scripts/.quantum-digest-sent.log
+            git diff --staged --quiet || git commit -m "chore: update digest sent log"
+            git push
+          fi
+        permissions:
+          contents: write

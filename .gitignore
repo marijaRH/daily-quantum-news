@@ -1,0 +1,6 @@
+# Env files with secrets (copy from *.example)
+scripts/quantum-digest.env
+scripts/digest-*.env
+# Optional local deps
+scripts/.venv-deps/
+scripts/quantum-digest.log
